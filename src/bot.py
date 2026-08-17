@@ -22,6 +22,8 @@ logger = logging.getLogger(__name__)
 
 # Get token from environment
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")
+PORT = int(os.getenv("PORT", "8080"))
 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -71,10 +73,21 @@ def main() -> None:
 
     # Add error handler
     application.add_error_handler(error_handler)
+    webhook_path = "/telegram"
+    full_webhook_url = f"{WEBHOOK_URL}{webhook_path}"
+    # Set webhook
+    await application.bot.set_webhook(full_webhook_url)
+    logger.info(f"✅ Webhook set to: {full_webhook_url}")
 
-    # Run the bot (polling)
+
+    # Run the bot (webhook)
     logger.info("🚀 Bot is starting...")
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+    application.run_webhook(
+        listen="0.0.0.0",
+        port=PORT,
+        url_path="telegram",
+        webhook_url=full_webhook_url,
+    )
 
 
 if __name__ == "__main__":
