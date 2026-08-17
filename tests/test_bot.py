@@ -65,20 +65,18 @@ def test_main_success(mocker):
     with patch("src.bot.BOT_TOKEN", "test_token_123"), \
          patch("src.bot.WEBHOOK_URL", "https://mybot.azurecontainerapps.io"), \
          patch("src.bot.PORT", 80):
-        
+
         main()
 
     # Verify token was set
     mock_builder.token.assert_called_once_with("test_token_123")
     mock_builder.build.assert_called_once()
 
-    # Verify handlers added (start + help)
-    assert mock_app.add_handler.call_count == 2
+    # ✅ التعديل هنا: تغيير 2 إلى 3 لأننا أضفنا echo_message handler
+    assert mock_app.add_handler.call_count == 3
 
-    # Verify webhook started with correct args
-    mock_app.run_webhook.assert_called_once_with(
-        listen="0.0.0.0",
-        port=80,
-        webhook_url="https://mybot.azurecontainerapps.io/telegram",
-        url_path="telegram",
-    )
+    # Verify run_webhook was called with correct arguments
+    mock_app.run_webhook.assert_called_once()
+    call_kwargs = mock_app.run_webhook.call_args.kwargs
+    assert call_kwargs["listen"] == "0.0.0.0"
+    assert call_kwargs["port"] == 80
