@@ -64,7 +64,7 @@ def test_main_success(mocker):
     # Mock environment variables
     with patch("src.bot.BOT_TOKEN", "test_token_123"), \
          patch("src.bot.WEBHOOK_URL", "https://mybot.azurecontainerapps.io"), \
-         patch("src.bot.PORT", 8080):
+         patch("src.bot.PORT", 80):
         
         main()
 
