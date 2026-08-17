@@ -1,80 +1,54 @@
 import os
 import logging
 from telegram import Update
-from dotenv import load_dotenv
-from telegram.ext import (
-    Application,
-    CommandHandler,
-    MessageHandler,
-    filters,
-    ContextTypes,
-)
+from telegram.ext import Application, CommandHandler, ContextTypes
 
-
-load_dotenv()
-
-# Setup logging
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
 )
 logger = logging.getLogger(__name__)
 
-# Get token from environment
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")
+PORT = int(os.getenv("PORT", "8080"))
 
 
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle /start command."""
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    await update.message.reply_text(
-        f"👋 أهلاً {user.first_name}!\n\n"
-        f"أنا بوت بسيط بيعرف:\n"
-        f"• /start — الترحيب\n"
-        f"• /help — المساعدة\n"
-        f"• أي رسالة — يرد عليك"
-    )
+    await update.message.reply_text(f"👋 أهلاً {user.first_name}!")
 
 
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle /help command."""
-    await update.message.reply_text(
-        "🆘 المساعدة:\n\n"
-        "• اكتب أي حاجة — هرد عليك\n"
-        "• البوت شغال 24/7!"
-    )
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🆘 اكتب أي حاجة وهرد عليك!")
 
 
-async def echo_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Echo any text message back."""
+async def echo_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
     await update.message.reply_text(f"📩 قولت: {text}")
 
 
-async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Log errors."""
-    logger.error(f"Update {update} caused error: {context.error}")
-
-
-def main() -> None:
-    """Start the bot."""
+def main():
     if not BOT_TOKEN:
-        raise ValueError("BOT_TOKEN not found! Add it to .env file.")
+        raise ValueError("BOT_TOKEN not found!")
 
-    # Create application
-    application = Application.builder().token(BOT_TOKEN).build()
+    app = Application.builder().token(BOT_TOKEN).build()
 
-    # Add handlers
-    application.add_handler(CommandHandler("start", start_command))
-    application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo_message))
+    app.add_handler(CommandHandler("start", start_command))
+    app.add_handler(CommandHandler("help", help_command))
 
-    # Add error handler
-    application.add_error_handler(error_handler)
+    webhook_path = "/telegram"
+    full_webhook_url = f"{WEBHOOK_URL}{webhook_path}"
 
-    # Run the bot (polling)
-    logger.info("🚀 Bot is starting...")
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+    logger.info(f"Starting webhook on port {PORT}")
+    logger.info(f"Webhook URL: {full_webhook_url}")
+
+    app.run_webhook(
+        listen="0.0.0.0",
+        port=PORT,
+        webhook_url=full_webhook_url,
+        url_path="telegram",
+    )
 
 
 if __name__ == "__main__":

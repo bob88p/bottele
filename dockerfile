@@ -2,15 +2,16 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# 1. نزل المكتبات الأساسية بس
+# Install dependencies first (for layer caching)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 2. انسخ كود البوت
+# Copy app code
 COPY src/ ./src/
 
-# 3. متغيرات البيئة
 ENV PYTHONUNBUFFERED=1
+ENV PORT=8080
 
-# 4. شغل البوت
+EXPOSE 8080
+
 CMD ["python", "-m", "src.bot"]
