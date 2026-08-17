@@ -1,7 +1,7 @@
 import os
 import logging
 from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes
+from telegram.ext import Application, CommandHandler, ContextTypes,MessageHandler , filters
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
-PORT = int(os.getenv("PORT", "8080"))
+PORT = int(os.getenv("PORT", "80"))
 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -30,15 +30,22 @@ async def echo_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     if not BOT_TOKEN:
-        raise ValueError("BOT_TOKEN not found!")
+        raise ValueError("❌ BOT_TOKEN not found in environment variables!")
+    
+    if not WEBHOOK_URL:
+           raise ValueError("❌ WEBHOOK_URL not found! Webhook bots require a public URL.")
+    
 
     app = Application.builder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start_command))
     app.add_handler(CommandHandler("help", help_command))
 
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo_message))
+
     webhook_path = "/telegram"
-    full_webhook_url = f"{WEBHOOK_URL}{webhook_path}"
+    clean_webhook_url = WEBHOOK_URL.rstrip('/')
+    full_webhook_url = f"{clean_webhook_url}{webhook_path}"
 
     logger.info(f"Starting webhook on port {PORT}")
     logger.info(f"Webhook URL: {full_webhook_url}")
