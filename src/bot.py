@@ -30,11 +30,7 @@ async def echo_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     if not BOT_TOKEN:
-        raise ValueError("❌ BOT_TOKEN not found in environment variables!")
-    
-    if not WEBHOOK_URL:
-           raise ValueError("❌ WEBHOOK_URL not found! Webhook bots require a public URL.")
-    
+        raise ValueError("BOT_TOKEN not found!")
 
     app = Application.builder().token(BOT_TOKEN).build()
 
