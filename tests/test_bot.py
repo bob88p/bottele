@@ -78,7 +78,7 @@ def test_main_success(mocker):
     # Verify webhook started with correct args
     mock_app.run_webhook.assert_called_once_with(
         listen="0.0.0.0",
-        port=8080,
+        port=80,
         webhook_url="https://mybot.azurecontainerapps.io/telegram",
         url_path="telegram",
     )
